@@ -5,7 +5,7 @@ namespace HabitLogger.Entities
     public static class DataAccess
     {
         private readonly static string _connectionString = "Server=(localdb)\\RonaldProjetos;Database=Habits;Trusted_Connection=True;";
-        
+
         public async static Task CreateTable()
         {
             await using (SqlConnection db = new SqlConnection(_connectionString))
@@ -54,8 +54,9 @@ namespace HabitLogger.Entities
             }
         }
 
-        public async static Task GetHabits()
+        public async static Task<List<Habit>> GetHabits()
         {
+            var habits = new List<Habit>();
             await using (SqlConnection db = new SqlConnection(_connectionString))
             {
                 await db.OpenAsync();
@@ -68,26 +69,35 @@ namespace HabitLogger.Entities
                     {
                         while (await reader.ReadAsync())
                         {
-                            Console.WriteLine($"{reader["idhabit"]} - {reader["habitname"]} - {reader["quantity"]} - {reader["habitdate"]} ");
+                            var habit = new Habit()
+                            {
+                                Id = Convert.ToInt32(reader["idhabit"]),
+                                HabitName = reader["habitname"].ToString(),
+                                Quantity = Convert.ToInt32(reader["quantity"]),
+                                HabitDate = Convert.ToDateTime(reader["habitdate"])
+                            };
+                            habits.Add(habit);
+
                         }
                     }
                 }
             }
+            return habits;
         }
 
-        public async static Task RemoveHabit(int id)
+        public async static Task RemoveHabit(Habit habit)
         {
             await using (SqlConnection db = new SqlConnection(_connectionString))
             {
                 await db.OpenAsync();
 
-                string query = "DELETE FROM habits where idhabit = @idhabit";
+                string query = "DELETE FROM habit where idhabit = @idhabit";
 
                 try
                 {
                     await using (SqlCommand cmd = new SqlCommand(query, db))
                     {
-                        cmd.Parameters.AddWithValue("@idhabit", id);
+                        cmd.Parameters.AddWithValue("@idhabit", habit.Id);
                         await cmd.ExecuteNonQueryAsync();
                     }
                 }
@@ -118,7 +128,7 @@ namespace HabitLogger.Entities
                     {
                         cmd.Parameters.AddWithValue("@habitname", habitName);
                         cmd.Parameters.AddWithValue("@quantity", quantity);
-                        cmd.Parameters.AddWithValue("@habitdate", habitDate);
+                        cmd.Parameters.AddWithValue("@habitdate", Convert.ToDateTime(habitDate));
                         cmd.Parameters.AddWithValue("@idhabit", id);
                         await cmd.ExecuteNonQueryAsync();
                     }
@@ -128,6 +138,35 @@ namespace HabitLogger.Entities
                     throw new Exception("Erro ao atualizar um hábito." + ex.Message);
                 }
             }
+        }
+
+        public async static Task<Habit> GetHabitById(int id)
+        {
+            var habit = new Habit();
+            await using (SqlConnection db = new SqlConnection(_connectionString))
+            {
+                await db.OpenAsync();
+
+                string query = @"SELECT idhabit, habitname, quantity, habitdate FROM HABIT WHERE idhabit = @idhabit";
+
+                await using (SqlCommand cmd = new SqlCommand(query, db))
+                {
+                    cmd.Parameters.AddWithValue("@idhabit", id);
+
+                    await using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                    {
+                        while (reader.Read())
+                        {
+                            habit.Id = Convert.ToInt32(reader["idhabit"]);
+                            habit.HabitName = reader["habitname"].ToString();
+                            habit.Quantity = Convert.ToInt32(reader["quantity"]);
+                            habit.HabitDate = Convert.ToDateTime(reader["habitdate"]);
+
+                        }
+                    }
+                }
+            }
+            return habit;
         }
     }
 }
