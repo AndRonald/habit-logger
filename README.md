@@ -13,8 +13,6 @@ https://spectreconsole.net/console/widgets/text
 https://pt.stackoverflow.com/questions/86014/como-fazer-a-aplica%C3%A7%C3%A3o-esperar-por-um-tempo
 
 
-[!TIP]
-
 negotiations regarding data inputs and outputs, Spectre itself already performs this validation, that is, if you do not enter the data to which it is able to receive in the console, it returns the message and waits for a valid return to the field
 
 #Research objects
@@ -23,6 +21,5 @@ If you'd like to do some research, here are some interesting topics:
 how to use sql parameters ado.net 
 how to create local database
 
-[!NOTE]
 I would also include the use of spectre, but I confess that I found my use much more exploratory than correct.
 
